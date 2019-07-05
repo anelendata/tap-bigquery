@@ -4,10 +4,11 @@ import json
 import singer
 from singer import utils, metadata
 
-from sync_bigquery as source
+from . import sync_bigquery as source
 
 
-REQUIRED_CONFIG_KEYS = ["start_date", "username", "password"]
+REQUIRED_CONFIG_KEYS = ["start_date", "username", "password", "streams"]
+
 LOGGER = singer.get_logger()
 
 def get_abs_path(path):
@@ -25,18 +26,18 @@ def load_schemas():
 
     return schemas
 
-def discover():
-    raw_schemas = load_schemas()
+def discover(config):
+    # raw_schemas = load_schemas()
     streams = []
 
-    for schema_name, schema in raw_schemas.items():
-
-        stream_metadata, stream_key_properties = source.do_discover(schema_name, schema)
+    for stream in config["streams"]:
+    # for schema_name, schema in raw_schemas.item
+        stream_metadata, stream_key_properties, schema = source.do_discover(stream)
 
         # create and add catalog entry
         catalog_entry = {
-            'stream': schema_name,
-            'tap_stream_id': schema_name,
+            'stream': stream["name"],
+            'tap_stream_id': stream["name"],
             'schema': schema,
             'metadata' : stream_metadata,
             'key_properties': stream_key_properties
@@ -52,11 +53,11 @@ def get_selected_streams(catalog):
     and mdata with a 'selected' entry
     '''
     selected_streams = []
-    for stream in catalog.streams:
-        stream_metadata = metadata.to_map(stream.metadata)
+    for stream in catalog["streams"]:
+        stream_metadata = metadata.to_map(stream["metadata"])
         # stream metadata will have an empty breadcrumb
         if metadata.get(stream_metadata, (), "selected"):
-            selected_streams.append(stream.tap_stream_id)
+            selected_streams.append(stream["tap_stream_id"])
 
     return selected_streams
 
@@ -65,9 +66,9 @@ def sync(config, state, catalog):
     selected_stream_ids = get_selected_streams(catalog)
 
     # Loop over streams in catalog
-    for stream in catalog.streams:
-        stream_id = stream.tap_stream_id
-        stream_schema = stream.schema
+    for stream in catalog["streams"]:
+        stream_id = stream["tap_stream_id"]
+        stream_schema = stream["schema"]
         if stream_id in selected_stream_ids:
             source.do_sync(stream)
             LOGGER.info('Syncing stream:' + stream_id)
@@ -81,16 +82,21 @@ def main():
 
     # If discover flag was passed, run discovery mode and dump output to stdout
     if args.discover:
-        catalog = discover()
+        catalog = discover(args.config)
         print(json.dumps(catalog, indent=2))
     # Otherwise run in sync mode
     else:
         if args.catalog:
             catalog = args.catalog
         else:
-            catalog =  discover()
+            catalog =  discover(args.config)
 
         sync(args.config, args.state, catalog)
+
+
+CONFIG = {}
+for key in REQUIRED_CONFIG_KEYS:
+    CONFIG[key] = None
 
 if __name__ == "__main__":
     main()

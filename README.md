@@ -45,6 +45,21 @@ It should be possible to use the oAuth flow to authenticate to GCP as well:
 The data will be written to the table specified in your `config.json`.
 
 
+## Development Note
+
+Python tap tutorial
+https://github.com/singer-io/getting-started/blob/master/docs/RUNNING_AND_DEVELOPING.md#a-python-tap
+
+BigQuery Python example
+https://cloud.google.com/bigquery/docs/quickstarts/quickstart-client-libraries#client-libraries-install-python
+
+Use Cookie cutter
+https://github.com/cookiecutter/cookiecutter
+
+To create the skeleton for BigQuery tap
+https://github.com/singer-io/singer-tap-template
+
+
 ---
 
 Copyright &copy; 2019 Anelen Data
