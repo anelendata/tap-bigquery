@@ -55,6 +55,7 @@ def do_discover(stream, limit=100):
             "selected": True,
             "table": stream["table"],
             "columns": stream["columns"],
+            "datetime_key": stream["datetime_key"]
             # "inclusion": "available",
             # "table-key-properties": ["id"],
             # "valid-replication-keys": ["date_modified"],
@@ -73,11 +74,27 @@ def do_discover(stream, limit=100):
               }
     return stream_metadata, stream_key_properties, schema
 
-def do_sync(stream):
+def do_sync(config, stream):
     client = bigquery.Client()
     metadata = stream["metadata"][0]["metadata"]
-    keys = {"table": metadata["table"], "columns": ".".join(metadata["columns"])}
-    query = """SELECT {columns} FROM {table} ORDER BY {order_by}""".format(**keys)
+    if config.get("start_datetime"):
+        start_datetime = dateutil.parser.parse(config.get("start_datetime")).strftime("%Y-%m-%d %H:%M:%S")
+    if config.get("end_datetime"):
+        end_datetime = dateutil.parser.parse(config.get("end_datetime")).strftime("%Y-%m-%d %H:%M:%S")
+
+    keys = {"table": metadata["table"],
+            "columns": ".".join(metadata["columns"]),
+            "datetime_key": metadata.get("datetime_key"),
+            "start_datetime": start_datetime,
+            "end_datetime": end_datetime
+            }
+    query = """SELECT {columns} FROM {table} WHERE 1=1""".format(**keys)
+    if keys.get("datetime_key") and keys.get("start_datetime"):
+        query = query + " AND datetime '{start_datetime}' <= {datetime_key}".format(**keys)
+    if keys.get("datetime_key") and keys.get("end_datetime"):
+        query = query + " AND {datetime_key} < datetime '{end_datetime}'".format(**keys)
+    query = query + " LIMIT 10"
+    print(query)
     query_job = client.query(query)
 
     results = query_job.result()  # Waits for job to complete.

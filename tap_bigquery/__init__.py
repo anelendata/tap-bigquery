@@ -7,7 +7,7 @@ from singer import utils, metadata
 from . import sync_bigquery as source
 
 
-REQUIRED_CONFIG_KEYS = ["start_date", "username", "password", "streams"]
+REQUIRED_CONFIG_KEYS = ["start_datetime", "streams"]
 
 LOGGER = singer.get_logger()
 
@@ -70,7 +70,7 @@ def sync(config, state, catalog):
         stream_id = stream["tap_stream_id"]
         stream_schema = stream["schema"]
         if stream_id in selected_stream_ids:
-            source.do_sync(stream)
+            source.do_sync(config, stream)
             LOGGER.info('Syncing stream:' + stream_id)
     return
 

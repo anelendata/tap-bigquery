@@ -1,5 +1,5 @@
 {
-  "start_date": "2017-01-01T00:00:00Z",
+  "start_datetime": "2017-01-01T00:00:00Z",
   "streams": [{"name": "schema_name",
                "table": "`<project>.<dataset>.<table>`",
                "columns": ["*"]}]
