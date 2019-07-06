@@ -67,16 +67,13 @@ def do_discover(stream, limit=100):
     schema = {"type": "SCHEMA",
               "stream": stream["name"],
               "key_properties":[],
-              "schema":{
-                "type": "object",
-                "properties": properties
-                }
+              "properties": properties
               }
     return stream_metadata, stream_key_properties, schema
 
 def do_sync(config, stream):
     client = bigquery.Client()
-    metadata = stream["metadata"][0]["metadata"]
+    metadata = stream.metadata[0]["metadata"]
     if config.get("start_datetime"):
         start_datetime = dateutil.parser.parse(config.get("start_datetime")).strftime("%Y-%m-%d %H:%M:%S")
     if config.get("end_datetime"):
@@ -94,23 +91,25 @@ def do_sync(config, stream):
     if keys.get("datetime_key") and keys.get("end_datetime"):
         query = query + " AND {datetime_key} < datetime '{end_datetime}'".format(**keys)
     query = query + " LIMIT 10"
-    print(query)
     query_job = client.query(query)
 
     results = query_job.result()  # Waits for job to complete.
 
-    print(json.dumps(stream["schema"]))
-    properties = stream["schema"]["schema"]["properties"]
+    stream_dict = stream.to_dict()
+    stream_dict["type"] = "SCHEMA"
+    stream_dict["schema"]["type"] = "object"
+    print(json.dumps(stream_dict))
+    properties = stream.schema.properties
     for row in results:
         record = {}
         for key in properties.keys():
             prop = properties[key]
-            if prop.get("format") == "date-time":
-                record[key] = row[key].isoformat()
+            if prop.format == "date-time":
+                record[key] = row[key].strftime("%Y-%m-%d %H:%M:%S")
             else:
                 record[key] = row[key]
         out_row = {"type": "RECORD",
-                   "stream": stream["schema"]["schema"],
-                   "schema": stream["schema"]["schema"],
+                   "stream": stream.stream,
+                   "schema": stream.stream,
                    "record": record}
         print(json.dumps(out_row))
