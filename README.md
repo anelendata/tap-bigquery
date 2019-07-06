@@ -1,7 +1,5 @@
 # tap-bigquery
 
-Note: This tap is under development. Not usable yet. Sorry to disappoint!
-
 Reverse ETL: Extract data from BigQuery tables.
 
 This is a [Singer](https://singer.io) tap that produces JSON-formatted data
