@@ -90,7 +90,6 @@ def do_sync(config, stream):
         query = query + " AND datetime '{start_datetime}' <= {datetime_key}".format(**keys)
     if keys.get("datetime_key") and keys.get("end_datetime"):
         query = query + " AND {datetime_key} < datetime '{end_datetime}'".format(**keys)
-    query = query + " LIMIT 10"
     query_job = client.query(query)
 
     results = query_job.result()  # Waits for job to complete.
