@@ -1,6 +1,7 @@
 import json
 import datetime
 import dateutil.parser
+import time
 
 from google.cloud import bigquery
 
@@ -105,7 +106,9 @@ def do_sync(config, stream):
         record = {}
         for key in properties.keys():
             prop = properties[key]
-            if prop.format == "date-time":
+            if "_etl_tstamp" in properties.keys() and key == "_etl_tstamp":
+                record["_etl_tstamp"] = time.time()
+            elif prop.format == "date-time":
                 record[key] = row[key].strftime("%Y-%m-%d %H:%M:%S")
             else:
                 record[key] = row[key]
