@@ -79,6 +79,12 @@ def do_sync(config, stream):
     if config.get("end_datetime"):
         end_datetime = dateutil.parser.parse(config.get("end_datetime")).strftime("%Y-%m-%d %H:%M:%S")
 
+    stream_dict = stream.to_dict()
+    stream_dict["type"] = "SCHEMA"
+    stream_dict["schema"]["type"] = "object"
+    print(json.dumps(stream_dict))
+    properties = stream.schema.properties
+
     keys = {"table": metadata["table"],
             "columns": ".".join(metadata["columns"]),
             "datetime_key": metadata.get("datetime_key"),
@@ -92,14 +98,10 @@ def do_sync(config, stream):
         query = query + " AND {datetime_key} < datetime '{end_datetime}'".format(**keys)
     query_job = client.query(query)
 
-    results = query_job.result()  # Waits for job to complete.
+    # results = query_job.result()  # Waits for job to complete.
 
-    stream_dict = stream.to_dict()
-    stream_dict["type"] = "SCHEMA"
-    stream_dict["schema"]["type"] = "object"
-    print(json.dumps(stream_dict))
-    properties = stream.schema.properties
-    for row in results:
+    for row in query_job:
+    # for row in results:
         record = {}
         for key in properties.keys():
             prop = properties[key]
