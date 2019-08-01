@@ -118,10 +118,10 @@ def parse_args(required_config_keys):
 
     # Capture additional args
     parser.add_argument(
-        "--start_date", type=str, default=None,
+        "--start_datetime", type=str, default=None,
         help="Inclusive start date time in ISO8601-Date-String format: 2019-04-11T00:00:00Z")
     parser.add_argument(
-        "--end_date", type=str, default=None,
+        "--end_datetime", type=str, default=None,
         help="Exclusive end date time in ISO8601-Date-String format: 2019-04-12T00:00:00Z")
 
     args = parser.parse_args()
@@ -147,26 +147,26 @@ def main():
     CONFIG.update(args.config)
 
     # Overwrite config specs with commandline args if present
-    if args.start_date:
-        CONFIG["start_date"] = args.start_date
-    if args.end_date:
-        CONFIG["end_date"] = args.end_date
+    if args.start_datetime:
+        CONFIG["start_datetime"] = args.start_datetime
+    if args.end_datetime:
+        CONFIG["end_datetime"] = args.end_datetime
 
-    if not CONFIG.get("end_date"):
-        CONFIG["end_date"]  = datetime.datetime.utcnow().isoformat()
+    if not CONFIG.get("end_datetime"):
+        CONFIG["end_datetime"]  = datetime.datetime.utcnow().isoformat()
 
     # If discover flag was passed, run discovery mode and dump output to stdout
     if args.discover:
-        catalog = discover(args.config)
+        catalog = discover(CONFIG)
         print(json.dumps(catalog, indent=2))
     # Otherwise run in sync mode
     else:
         if args.catalog:
             catalog = args.catalog
         else:
-            catalog = Catalog.from_dict(discover(args.config))
+            catalog = Catalog.from_dict(discover(CONFIG))
 
-        sync(args.config, args.state, catalog)
+        sync(CONFIG, args.state, catalog)
 
 
 CONFIG = {}
