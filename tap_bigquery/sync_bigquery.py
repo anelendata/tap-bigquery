@@ -3,9 +3,10 @@ import datetime
 import dateutil.parser
 import time
 
+import singer
 from google.cloud import bigquery
 
-
+LOGGER = singer.get_logger()
 APPLICATION_NAME = 'Singer BigQuery Target'
 
 # export GOOGLE_APPLICATION_CREDENTIALS=''
@@ -13,10 +14,15 @@ APPLICATION_NAME = 'Singer BigQuery Target'
 
 def do_discover(stream, limit=100):
     client = bigquery.Client()
+    filters = "AND ".join(stream["filters"])
+    if filters:
+        filters = "AND " + filters
     keys = {"table": stream["table"],
-            "columns": ".".join(stream["columns"]),
+            "columns": ",".join(stream["columns"]),
+            "filters": filters,
             "limit": limit}
-    query = """SELECT {columns} FROM {table} limit {limit}""".format(**keys)
+    query = """SELECT {columns} FROM {table} WHERE 1=1 {filters} LIMIT {limit}""".format(**keys)
+    LOGGER.info("Running query:\n    " + query)
     query_job = client.query(query)
     results = query_job.result()  # Waits for job to complete.
 
@@ -51,11 +57,15 @@ def do_discover(stream, limit=100):
                 except ValueError as e:
                     pass
 
+    properties["_etl_tstamp"] = {"type": ["null", "number"],
+                                 "inclusion": "automatic"}
+
     stream_metadata = [{
         "metadata": {
             "selected": True,
             "table": stream["table"],
             "columns": stream["columns"],
+            "filters": stream["filters"],
             "datetime_key": stream["datetime_key"]
             # "inclusion": "available",
             # "table-key-properties": ["id"],
@@ -65,7 +75,8 @@ def do_discover(stream, limit=100):
         "breadcrumb": []
         }]
     stream_key_properties = []
-    schema = {"type": "SCHEMA",
+    schema = {"selected": True,
+              "type": "SCHEMA",
               "stream": stream["name"],
               "key_properties":[],
               "properties": properties
@@ -93,11 +104,17 @@ def do_sync(config, stream):
             "end_datetime": end_datetime
             }
     query = """SELECT {columns} FROM {table} WHERE 1=1""".format(**keys)
+    print(metadata)
+
+    for f in metadata.get("filters", []):
+        query = query + " AND " + f
     if keys.get("datetime_key") and keys.get("start_datetime"):
         query = query + " AND datetime '{start_datetime}' <= {datetime_key}".format(**keys)
     if keys.get("datetime_key") and keys.get("end_datetime"):
         query = query + " AND {datetime_key} < datetime '{end_datetime}'".format(**keys)
     query_job = client.query(query)
+
+    LOGGER.info("Running query:\n    %s" % query)
 
     # results = query_job.result()  # Waits for job to complete.
 
