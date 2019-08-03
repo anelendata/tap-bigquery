@@ -14,9 +14,9 @@ APPLICATION_NAME = 'Singer BigQuery Target'
 
 def do_discover(stream, limit=100):
     client = bigquery.Client()
-    filters = "AND ".join(stream["filters"])
-    if filters:
-        filters = "AND " + filters
+    filters = ""
+    if stream.get("filters", None):
+        filters = "AND " + "AND ".join(stream["filters"])
     keys = {"table": stream["table"],
             "columns": ",".join(stream["columns"]),
             "filters": filters,
@@ -65,7 +65,7 @@ def do_discover(stream, limit=100):
             "selected": True,
             "table": stream["table"],
             "columns": stream["columns"],
-            "filters": stream["filters"],
+            "filters": stream.get("filters", []),
             "datetime_key": stream["datetime_key"]
             # "inclusion": "available",
             # "table-key-properties": ["id"],
@@ -104,7 +104,6 @@ def do_sync(config, stream):
             "end_datetime": end_datetime
             }
     query = """SELECT {columns} FROM {table} WHERE 1=1""".format(**keys)
-    print(metadata)
 
     for f in metadata.get("filters", []):
         query = query + " AND " + f
