@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
-import argparse, attr, backoff, datetime, itertools, json, os, pytz, requests, sys, time, urllib
+import argparse, attr, backoff, datetime, itertools, json, logging, os, pytz, requests, sys, time, urllib
 
 import singer
 from singer import utils, metadata
 from singer.catalog import Catalog
 
-import sync_bigquery as source
+from . import sync_bigquery as source
 
 
-REQUIRED_CONFIG_KEYS = ["start_datetime", "streams"]
+REQUIRED_CONFIG_KEYS = ["streams"]
 
-LOGGER = singer.get_logger()
+logging.basicConfig(stream=sys.stdout,
+                    format="%(asctime)s - " + str(__name__) + " - %(name)s - %(levelname)s - %(message)s",
+                    level=logging.INFO)
+LOGGER = logging.getLogger(__name__)
+
 
 def get_abs_path(path):
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)

@@ -1,12 +1,16 @@
-import json
-import datetime
+import datetime, json, logging, sys, time
 import dateutil.parser
-import time
 
 import singer
 from google.cloud import bigquery
 
-LOGGER = singer.get_logger()
+logging.basicConfig(stream=sys.stdout,
+                    format="%(asctime)s - " + str(__name__) + " - %(name)s - %(levelname)s - %(message)s",
+                    level=logging.INFO)
+LOGGER = logging.getLogger(__name__)
+
+
+
 APPLICATION_NAME = 'Singer BigQuery Target'
 
 # export GOOGLE_APPLICATION_CREDENTIALS=''
