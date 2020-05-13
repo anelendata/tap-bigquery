@@ -109,6 +109,13 @@ def do_sync(config, stream):
             }
     query = """SELECT {columns} FROM {table} WHERE 1=1""".format(**keys)
 
+    state = {
+        "type": "STATE",
+        "value": {
+            metadata["table"]: { metadata.get("datetime_key") : end_datetime}
+        }
+    }
+
     for f in metadata.get("filters", []):
         query = query + " AND " + f
     if keys.get("datetime_key") and keys.get("start_datetime"):
@@ -137,3 +144,5 @@ def do_sync(config, stream):
                    "schema": stream.stream,
                    "record": record}
         print(json.dumps(out_row))
+
+    print(json.dumps(state))

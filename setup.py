@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="tap_bigquery",
-    version="0.1.0",
+    version="0.1.4",
     description="Singer.io tap for extracting data",
     author="Stitch",
     url="http://singer.io",
@@ -12,7 +12,8 @@ setup(
     install_requires=[
         "singer-python>=5.0.12",
         "requests",
-        "google-cloud-bigquery==1.16.0"
+        "google-cloud-bigquery==1.16.0",
+        "attrs==19.3.0"
     ],
     entry_points="""
     [console_scripts]
