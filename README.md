@@ -66,3 +66,5 @@ The data will be written to the table specified in your `config.json`.
 
 ## Original repo
 https://github.com/anelendata/tap_bigquery
+
+Copyright &copy; 2019 Anelen Data
