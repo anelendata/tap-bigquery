@@ -38,10 +38,15 @@ tap-bigquery can be run with any Singer Target. As example, let use target-redsh
 
 These commands will install target-redshift and tap-bigquery with pip. Export google client secrets file to auth in Google cloud. Run tap-bigquery in discovery mode to let it create json schema file and then run them together, piping the output of tap-bigquery to target-redshift:
 
-› pip install tap-bigquery pipelinewise-target-redshift
-› export GOOGLE_APPLICATION_CREDENTIALS="./client_secret.json"
-› tap_bigquery -c config.json -d > catalog.json
-› tap_bigquery -c config.json --catalog catalog.json --start_datetime '2020-05-01T00:00:00Z' --end_datetime '2020-05-01T01:00:00Z'
+```
+> pip install tap-bigquery pipelinewise-target-redshift
+
+> export GOOGLE_APPLICATION_CREDENTIALS="./client_secret.json"
+
+> tap_bigquery -c config.json -d > catalog.json
+
+> tap_bigquery -c config.json --catalog catalog.json --start_datetime '2020-05-01T00:00:00Z' --end_datetime '2020-05-01T01:00:00Z'
+```
 
 ### Authentication
 
