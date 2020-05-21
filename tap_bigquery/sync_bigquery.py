@@ -134,7 +134,7 @@ def do_sync(config, stream):
         for key in properties.keys():
             prop = properties[key]
             if "_etl_tstamp" in properties.keys() and key == "_etl_tstamp":
-                record["_etl_tstamp"] = time.time()
+                record["_etl_tstamp"] = int(round(time.time() * 1000))
             elif prop.format == "date-time":
                 record[key] = row[key].strftime("%Y-%m-%d %H:%M:%S")
             else:
