@@ -4,5 +4,5 @@
   "streams": [{"name": "schema_name",
                "table": "`<project>.<dataset>.<table>`",
                "columns": ["*"],
-               "datetime_key": "CAST(<your_key> as datetime)"}]
+               "datetime_key": "<your_key>"}]
 }
