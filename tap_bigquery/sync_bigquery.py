@@ -1,5 +1,6 @@
-import datetime, json, time
+import copy, datetime, json, time
 import dateutil.parser
+from decimal import Decimal
 
 import singer
 import singer.metrics as metrics
@@ -25,18 +26,54 @@ LEGACY_TIMESTAMP = "_etl_tstamp"
 BOOKMARK_KEY_NAME = "last_update"
 
 
-def do_discover(stream, limit=100, output_schema_file=None,
+def _build_query(keys, filters, inclusive_start=True):
+    query = "SELECT {columns} FROM {table} WHERE 1=1".format(**keys)
+    if filters:
+        for f in filters:
+            query = query + " AND " + f
+
+    if keys.get("datetime_key") and keys.get("start_datetime"):
+        if inclusive_start:
+            query = (query +
+                     (" AND datetime '{start_datetime}' <= " +
+                      "CAST({datetime_key} as datetime)").format(**keys))
+        else:
+            query = (query +
+                     (" AND datetime '{start_datetime}' < " +
+                      "CAST({datetime_key} as datetime)").format(**keys))
+
+    if keys.get("datetime_key") and keys.get("end_datetime"):
+        query = (query +
+                 (" AND CAST({datetime_key} as datetime) < " +
+                  "datetime '{end_datetime}'").format(**keys))
+    if keys.get("datetime_key"):
+        query = (query + " ORDER BY {datetime_key}".format(**keys))
+
+    return query
+
+
+def do_discover(config, stream, limit=100, output_schema_file=None,
                 add_timestamp=True):
     client = bigquery.Client()
-    filters = ""
-    if stream.get("filters", None):
-        filters = "AND " + "AND ".join(stream["filters"])
+
+    if config.get("start_datetime"):
+        start_datetime = dateutil.parser.parse(
+            config.get("start_datetime")).strftime("%Y-%m-%d %H:%M:%S.%f")
+
+    if config.get("end_datetime"):
+        end_datetime = dateutil.parser.parse(
+            config.get("end_datetime")).strftime("%Y-%m-%d %H:%M:%S.%f")
+
     keys = {"table": stream["table"],
             "columns": ",".join(stream["columns"]),
-            "filters": filters,
-            "limit": limit}
-    query = ("SELECT {columns} FROM {table} WHERE 1=1 " +
-             "{filters} LIMIT {limit}").format(**keys)
+            "datetime_key": stream["datetime_key"],
+            "start_datetime": start_datetime,
+            "end_datetime": end_datetime
+            }
+
+    query = _build_query(keys, stream.get("filters"))
+    if limit:
+        query = query + " LIMIT %d" % limit
 
     LOGGER.info("Running query:\n    " + query)
 
@@ -93,45 +130,26 @@ def do_discover(stream, limit=100, output_schema_file=None,
     return stream_metadata, key_properties, catalog
 
 
-def get_start(config, state, tap_stream_id, key):
-    current_bookmark = singer.get_bookmark(state, tap_stream_id, key)
-    if not current_bookmark and config.get("start_datetime"):
-        current_bookmark = dateutil.parser.parse(config.get("start_datetime")).strftime("%Y-%m-%d %H:%M:%S")
-    return current_bookmark
-
-
-def _build_query(keys, filters):
-    query = "SELECT {columns} FROM {table} WHERE 1=1".format(**keys)
-
-    if filters:
-        for f in filters:
-            query = query + " AND " + f
-
-    if keys.get("datetime_key") and keys.get("start_datetime"):
-        query = (query +
-                 " AND datetime '{start_datetime}' <= CAST({datetime_key} as datetime)".format(
-                     **keys))
-    if keys.get("datetime_key") and keys.get("end_datetime"):
-        query = (query +
-                 " AND CAST({datetime_key} as datetime) < datetime '{end_datetime}'".format(
-                     **keys))
-    if keys.get("datetime_key"):
-        query = (query + " ORDER BY {datetime_key}".format(**keys))
-
-    return query
-
-
 def do_sync(config, state, stream):
     client = bigquery.Client()
     metadata = stream.metadata[0]["metadata"]
     tap_stream_id = stream.tap_stream_id
 
-    start_datetime = get_start(config, state, tap_stream_id, BOOKMARK_KEY_NAME)
+    start_datetime = singer.get_bookmark(state, tap_stream_id,
+                                         BOOKMARK_KEY_NAME)
+    if start_datetime:
+        inclusive_start = False
+    else:
+        start_datetime = config.get("start_datetime")
+        inclusive_start = True
+    start_datetime = dateutil.parser.parse(start_datetime).strftime(
+            "%Y-%m-%d %H:%M:%S.%f")
+
     if config.get("end_datetime"):
         end_datetime = dateutil.parser.parse(
-            config.get("end_datetime")).strftime("%Y-%m-%d %H:%M:%S")
+            config.get("end_datetime")).strftime("%Y-%m-%d %H:%M:%S.%f")
 
-    singer.write_schema(tap_stream_id, stream.schema.to_dict(),
+    singer.write_schema(tap_stream_id, stream.schema.to_dict()["properties"],
                         stream.key_properties)
 
     keys = {"table": metadata["table"],
@@ -141,39 +159,59 @@ def do_sync(config, state, stream):
             "end_datetime": end_datetime
             }
 
-    query = _build_query(keys, metadata.get("filters", []))
+    query = _build_query(keys, metadata.get("filters", []), inclusive_start)
     query_job = client.query(query)
 
     properties = stream.schema.properties
+    last_update = start_datetime
 
     LOGGER.info("Running query:\n    %s" % query)
+
+    extract_tstamp = datetime.datetime.utcnow()
+    extract_tstamp = extract_tstamp.replace(tzinfo=datetime.timezone.utc)
+
     with metrics.record_counter(tap_stream_id) as counter:
         for row in query_job:
-            extract_tstamp = datetime.datetime.utcnow()
-            extract_tstamp = extract_tstamp.replace(
-                tzinfo=datetime.timezone.utc)
-
             record = {}
             for key in properties.keys():
                 prop = properties[key]
 
-                if key == LEGACY_TIMESTAMP:
-                    record[key] = int(round(time.time() * 1000))
-                elif key == EXTRACT_TIMESTAMP:
-                    record[key] = extract_tstamp.isoformat()
-                elif key == BATCH_TIMESTAMP:
-                    # This should be written in the target
-                    pass
-                elif (type(row[key]) == datetime.datetime or
-                      type(row[key]) == datetime.date):
-                    record[key] = row[key].isoformat()
+                if key in [LEGACY_TIMESTAMP,
+                           EXTRACT_TIMESTAMP,
+                           BATCH_TIMESTAMP]:
+                    continue
+
+                if prop.format == "date-time":
+                    if type(row[key]) == str:
+                        r = dateutil.parser.parse(row[key])
+                    elif (type(row[key]) == datetime.datetime or
+                          type(row[key]) == datetime.date):
+                        r = row[key]
+                    else:
+                        raise ValueError(
+                            "Record does not match datetime schema %s" %
+                            row[key])
+                    record[key] = r.isoformat()
+                elif prop.type[1] == "string":
+                    record[key] = str(row[key])
+                elif prop.type[1] == "number" and row[key]:
+                    record[key] = Decimal(row[key])
+                elif prop.type[1] == "integer" and row[key]:
+                    record[key] = int(row[key])
                 else:
                     record[key] = row[key]
 
+            if LEGACY_TIMESTAMP in properties.keys():
+                record[LEGACY_TIMESTAMP ] = int(round(time.time() * 1000))
+            if EXTRACT_TIMESTAMP in properties.keys():
+                record[EXTRACT_TIMESTAMP ] = extract_tstamp.isoformat()
+
             singer.write_record(stream.stream, record)
+
             last_update = record[keys["datetime_key"]]
             counter.increment()
 
     state = singer.write_bookmark(state, tap_stream_id, BOOKMARK_KEY_NAME,
                                   last_update)
+
     singer.write_state(state)

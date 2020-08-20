@@ -1,5 +1,5 @@
 {
-  "start_datetime": "2017-01-01T00:00:00Z",
+  "start_datetime": "2017-01-01T00:00:00Z", // This can be set at the command line argument
   "end_datetime": "2017-02-01T00:00:00Z", // end_datetime is optional
   "streams": [{"name": "schema_name",
                "table": "`<project>.<dataset>.<table>`",

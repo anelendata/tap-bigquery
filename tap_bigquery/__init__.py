@@ -43,6 +43,7 @@ def discover(config):
 
     for stream in config["streams"]:
         stream_metadata, stream_key_properties, schema = source.do_discover(
+            config,
             stream)
 
         # create and add catalog entry
