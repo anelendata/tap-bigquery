@@ -4,5 +4,6 @@
   "streams": [{"name": "schema_name",
                "table": "`<project>.<dataset>.<table>`",
                "columns": ["*"],
-               "datetime_key": "<your_key>"}]
+               "datetime_key": "<your_key>"}],
+  "start_always_inclusive": false // default is false
 }

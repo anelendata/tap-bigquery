@@ -135,13 +135,14 @@ def do_sync(config, state, stream):
     metadata = stream.metadata[0]["metadata"]
     tap_stream_id = stream.tap_stream_id
 
+    inclusive_start = True
     start_datetime = singer.get_bookmark(state, tap_stream_id,
                                          BOOKMARK_KEY_NAME)
     if start_datetime:
-        inclusive_start = False
+        if not config.get("start_always_inclusive"):
+            inclusive_start = False
     else:
         start_datetime = config.get("start_datetime")
-        inclusive_start = True
     start_datetime = dateutil.parser.parse(start_datetime).strftime(
             "%Y-%m-%d %H:%M:%S.%f")
 

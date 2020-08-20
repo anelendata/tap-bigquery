@@ -97,7 +97,6 @@ def parse_args(required_config_keys):
     -c,--config     Config file
     -s,--state      State file
     -d,--discover   Run in discover mode
-    -p,--properties Properties file: DEPRECATED, please use --catalog instead
     --catalog       Catalog file
     Returns the parsed args object from argparse. For each argument that
     point to JSON files (config, state, properties), we will automatically

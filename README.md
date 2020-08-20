@@ -1,15 +1,15 @@
 # tap-bigquery
 
-Reverse ETL: Extract data from BigQuery tables.
+Extract data from BigQuery tables.
 
 This is a [Singer](https://singer.io) tap that produces JSON-formatted data
 following the [Singer spec](https://github.com/singer-io/getting-started/blob/master/SPEC.md).
 
 This tap:
 
-- Pulls table data from Google BigQuery
-- Infers the schema for each resource and produce catalog file
-- Incrementally pulls data based on the input state
+- Pulls data from Google BigQuery tables/views with datetime field.
+- Infers the schema for each resource and produce catalog file.
+- Incrementally pulls data based on the input state.
 
 ## Installation
 
@@ -31,7 +31,7 @@ This tap:
 Create a file called tap_config.json in your working directory, following 
 config.sample.json. The required parameters are at least one stream (one
 bigquery table/view) to copy. start_datetime must also be set in the
-config file or as the command line argument.
+config file or as the command line argument (See the next step).
 
 The table/view is expected to have a column to indicate the creation or
 update date and time so the tap sends the query with `ORDER BY` and use
@@ -62,7 +62,13 @@ run them together, piping the output of tap-bigquery to target-csv:
       --end_datetime '2020-05-01T01:00:00Z' | target-csv --config target_config.json
 ```
 
-Note: target-csv's target_config.json is optinal.
+Notes:
+
+- start and end datetimes accept ISO 8601 format, can be date only. start datetime
+  is inclusive, end datetime is not.
+- It is recommended to inspect the catalog file and fix the auto-type assignment
+  if necessary.
+- target-csv's target_config.json is optinal.
 
 ## Authentication
 
@@ -92,6 +98,11 @@ The command also takes a state file input with `--state <file-name>` option.
 If the state is set, start_datetime config and command line argument are
 ignored and the datetime value from last_update key is used as the resuming
 point.
+
+To avoid the data duplication, start datetime is exclusive
+`start_datetime < datetime_column` when the tap runs with state option. If
+you fear a data loss because of this, just use the `--start_datetime` option
+instead of state. Or set `start_always_inclusive: true` in configuration.
 
 The tap itself does not output a state file. It anticipate the target program
 or a downstream process to fianlize the state safetly and produce a state file.
