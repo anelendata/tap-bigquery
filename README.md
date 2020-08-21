@@ -33,8 +33,32 @@ this program.
  6. Click **OK** to dismiss the resulting dialog.
  7. Click the Download button to the right of the client ID.
  8. Move this file to your working directory and rename it *client_secrets.json*.
- 
-### Step 2: Configure
+
+
+Export the location of the secret file:
+
+```
+export GOOGLE_APPLICATION_CREDENTIALS="./client_secret.json"
+```
+
+For other authentication method, please see Authentication section.
+
+### Step 2: Install
+
+First, make sure Python 3 is installed on your system or follow these 
+installation instructions for Mac or Ubuntu.
+
+```
+pip install -U tap-bigquery
+```
+
+Or you can install the lastest development version from GitHub:
+
+```
+pip install --no-cache-dir https://github.com/anelendata/tap-bigquery/archive/master.tar.gz#egg=tap-bigquery
+```
+
+### Step 3: Configure
 
 Create a file called tap_config.json in your working directory, following 
 config.sample.json:
@@ -74,30 +98,35 @@ The table/view is expected to have a column to indicate the creation or
 update date and time so the tap sends the query with `ORDER BY` and use
 the column to record the bookmark (See State section).
 
-### Step 3: Install and Run
+### Step 4: Create catalog
 
-First, make sure Python 3 is installed on your system or follow these 
-installation instructions for Mac or Ubuntu.
-
-tap-bigquery can be run with any Singer Target. As example, let use
-[target-csv](https://github.com/singer-io/target-csv).
-
-These commands will install tap-bigquery and target-csv with pip.
-Export google client secrets file to auth in Google cloud.
 Run tap-bigquery in discovery mode to let it create json schema file and then
 run them together, piping the output of tap-bigquery to target-csv:
 
 ```
-> pip install tap-bigquery target-csv
-
-> export GOOGLE_APPLICATION_CREDENTIALS="./client_secret.json"
-
-> tap_bigquery -c tap_config.json -d > catalog.json
-
-> tap_bigquery -c tap_config.json \
-      --catalog tap_catalog.json --start_datetime '2020-05-01T00:00:00Z' \
-      --end_datetime '2020-05-01T01:00:00Z' | target-csv --config target_config.json
+tap_bigquery -c tap_config.json -d > catalog.json
 ```
+
+### Step 5: Run
+
+tap-bigquery can be run with any Singer Target. As example, let use
+[target-csv](https://github.com/singer-io/target-csv).
+
+```
+pip install tap-bigquery target-csv
+```
+
+Run:
+
+```
+tap_bigquery -c tap_config.json \
+    --catalog tap_catalog.json --start_datetime '2020-08-01T00:00:00Z' \
+    --end_datetime '2020-08-02T01:00:00Z' | target-csv --config target_config.json \
+    > state.json
+```
+
+This example should create a csv file in the same directory.
+`state.json` should contain a state (bookmark) after the run. (See State section).
 
 Notes:
 
