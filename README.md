@@ -58,7 +58,9 @@ Or you can install the lastest development version from GitHub:
 pip install --no-cache-dir https://github.com/anelendata/tap-bigquery/archive/master.tar.gz#egg=tap-bigquery
 ```
 
-### Step 3: Configure
+## Run
+
+### Step 1: Configure
 
 Create a file called tap_config.json in your working directory, following 
 config.sample.json:
@@ -98,7 +100,7 @@ The table/view is expected to have a column to indicate the creation or
 update date and time so the tap sends the query with `ORDER BY` and use
 the column to record the bookmark (See State section).
 
-### Step 4: Create catalog
+### Step 2: Create catalog
 
 Run tap-bigquery in discovery mode to let it create json schema file and then
 run them together, piping the output of tap-bigquery to target-csv:
@@ -107,13 +109,13 @@ run them together, piping the output of tap-bigquery to target-csv:
 tap_bigquery -c tap_config.json -d > catalog.json
 ```
 
-### Step 5: Run
+### Step 3: Run
 
 tap-bigquery can be run with any Singer Target. As example, let use
 [target-csv](https://github.com/singer-io/target-csv).
 
 ```
-pip install tap-bigquery target-csv
+pip install target-csv
 ```
 
 Run:
