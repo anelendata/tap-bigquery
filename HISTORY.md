@@ -1,6 +1,6 @@
 ## History
 
-### 0.3.0b0
+### 0.3.0
 
 - Handle multiple streams
 - Support state (bookmark)

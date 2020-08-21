@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup
 
-VERSION = "0.3.0b0"
+VERSION = "0.3.0"
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -43,8 +43,7 @@ setup(
     """,
 
     packages=["tap_bigquery"],
-    package_data = {
-        "schemas": ["tap_bigquery/schemas/*.json"]
+    package_data={
     },
     include_package_data=True,
 )

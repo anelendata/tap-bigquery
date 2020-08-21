@@ -106,7 +106,7 @@ Run tap-bigquery in discovery mode to let it create json schema file and then
 run them together, piping the output of tap-bigquery to target-csv:
 
 ```
-tap_bigquery -c tap_config.json -d > catalog.json
+tap-bigquery -c tap_config.json -d > catalog.json
 ```
 
 ### Step 3: Run
@@ -121,7 +121,7 @@ pip install target-csv
 Run:
 
 ```
-tap_bigquery -c tap_config.json \
+tap-bigquery -c tap_config.json \
     --catalog tap_catalog.json --start_datetime '2020-08-01T00:00:00Z' \
     --end_datetime '2020-08-02T01:00:00Z' | target-csv --config target_config.json \
     > state.json
@@ -157,6 +157,12 @@ the tap. In this case you do not need `GOOGLE_APPLICATION_CREDENTIALS` defined:
 gcloud auth application-default login
 ```
 
+You may also have to set the project:
+
+```
+gcloud config set project <project-id>
+```
+
 Though not tested, it should also be possible to use the OAuth flow to
 authenticate to GCP as well:
 - `tap-bigquery` will attempt to open a new window or tab in your default
@@ -187,6 +193,6 @@ The tap itself does not output a state file. It anticipate the target program
 or a downstream process to fianlize the state safetly and produce a state file.
 
 ## Original repo
-https://github.com/anelendata/tap_bigquery
+https://github.com/anelendata/tap-bigquery
 
 Copyright &copy; 2020- Anelen Data
