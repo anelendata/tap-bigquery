@@ -1,9 +1,16 @@
 {
+  "streams": [
+      {"name": "<some_schema_name>",
+       "table": "`<project>.<dataset>.<table>`",
+       "columns": ["<col_name_0>", "<col_name_1>", "<col_name_2>"],
+       "datetime_key": "<your_key>",
+       "filters": ["country='us'", "state='CA'",
+                   "registered_on>=DATE_ADD(current_date, INTERVAL -7 day)"
+                  ] // also optional: these are parsed in 'WHERE' clause
+      }
+    ],
   "start_datetime": "2017-01-01T00:00:00Z", // This can be set at the command line argument
   "end_datetime": "2017-02-01T00:00:00Z", // end_datetime is optional
-  "streams": [{"name": "schema_name",
-               "table": "`<project>.<dataset>.<table>`",
-               "columns": ["*"],
-               "datetime_key": "<your_key>"}],
-  "start_always_inclusive": false // default is false
+  "limit": 100,
+  "start_always_inclusive": false // default is false, optional
 }
