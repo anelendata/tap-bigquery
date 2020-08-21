@@ -26,11 +26,11 @@ LEGACY_TIMESTAMP = "_etl_tstamp"
 BOOKMARK_KEY_NAME = "last_update"
 
 
-def _build_query(keys, filters, inclusive_start=True, limit=None):
-    columns = keys["columns"]
+def _build_query(keys, filters=[], inclusive_start=True, limit=None):
+    columns = ",".join(keys["columns"])
     if "*" not in columns and keys["datetime_key"] not in columns:
         columns = columns + "," + keys["datetime_key"]
-        keys["columns"] = columns
+    keys["columns"] = columns
 
     query = "SELECT {columns} FROM {table} WHERE 1=1".format(**keys)
 
@@ -74,7 +74,7 @@ def do_discover(config, stream, output_schema_file=None,
             config.get("end_datetime")).strftime("%Y-%m-%d %H:%M:%S.%f")
 
     keys = {"table": stream["table"],
-            "columns": ",".join(stream["columns"]),
+            "columns": stream["columns"],
             "datetime_key": stream["datetime_key"],
             "start_datetime": start_datetime,
             "end_datetime": end_datetime
@@ -164,7 +164,7 @@ def do_sync(config, state, stream):
                         stream.key_properties)
 
     keys = {"table": metadata["table"],
-            "columns": ",".join(metadata["columns"]),
+            "columns": metadata["columns"],
             "datetime_key": metadata.get("datetime_key"),
             "start_datetime": start_datetime,
             "end_datetime": end_datetime
