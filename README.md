@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/anelendata/tap-bigquery.svg?branch=master)](https://travis-ci.com/anelendata/tap-bigquery)
+
 # tap-bigquery
 
 Extract data from BigQuery tables.
