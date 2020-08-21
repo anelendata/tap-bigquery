@@ -26,7 +26,7 @@ LEGACY_TIMESTAMP = "_etl_tstamp"
 BOOKMARK_KEY_NAME = "last_update"
 
 
-def _build_query(keys, filters, inclusive_start=True):
+def _build_query(keys, filters, inclusive_start=True, limit=None):
     query = "SELECT {columns} FROM {table} WHERE 1=1".format(**keys)
     if filters:
         for f in filters:
@@ -49,17 +49,20 @@ def _build_query(keys, filters, inclusive_start=True):
     if keys.get("datetime_key"):
         query = (query + " ORDER BY {datetime_key}".format(**keys))
 
+    if limit is not None:
+        query = query + " LIMIT %d" % limit
+
     return query
 
 
-def do_discover(config, stream, limit=100, output_schema_file=None,
+def do_discover(config, stream, output_schema_file=None,
                 add_timestamp=True):
     client = bigquery.Client()
 
-    if config.get("start_datetime"):
-        start_datetime = dateutil.parser.parse(
-            config.get("start_datetime")).strftime("%Y-%m-%d %H:%M:%S.%f")
+    start_datetime = dateutil.parser.parse(
+        config.get("start_datetime")).strftime("%Y-%m-%d %H:%M:%S.%f")
 
+    end_datetime = None
     if config.get("end_datetime"):
         end_datetime = dateutil.parser.parse(
             config.get("end_datetime")).strftime("%Y-%m-%d %H:%M:%S.%f")
@@ -71,9 +74,9 @@ def do_discover(config, stream, limit=100, output_schema_file=None,
             "end_datetime": end_datetime
             }
 
-    query = _build_query(keys, stream.get("filters"))
-    if limit:
-        query = query + " LIMIT %d" % limit
+
+    limit = config.get("limit", 100)
+    query = _build_query(keys, stream.get("filters"), limit=limit)
 
     LOGGER.info("Running query:\n    " + query)
 
@@ -160,7 +163,10 @@ def do_sync(config, state, stream):
             "end_datetime": end_datetime
             }
 
-    query = _build_query(keys, metadata.get("filters", []), inclusive_start)
+
+    limit = config.get("limit", None)
+    query = _build_query(keys, metadata.get("filters", []), inclusive_start,
+                         limit=limit)
     query_job = client.query(query)
 
     properties = stream.schema.properties

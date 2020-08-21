@@ -15,7 +15,7 @@ from . import sync_bigquery as source
 from . import utils
 
 
-REQUIRED_CONFIG_KEYS = ["streams"]
+REQUIRED_CONFIG_KEYS = ["streams", "start_datetime"]
 
 
 LOGGER = utils.get_logger(__name__)
@@ -87,7 +87,7 @@ def sync(config, state, catalog):
     return
 
 
-def parse_args(required_config_keys):
+def parse_args():
     ''' This is to replace singer's default singer_utils.parse_args()
     https://github.com/singer-io/singer-python/blob/master/singer/utils.py
 
@@ -146,14 +146,12 @@ def parse_args(required_config_keys):
     if args.catalog:
         args.catalog = Catalog.load(args.catalog)
 
-    singer_utils.check_config(args.config, required_config_keys)
-
     return args
 
 
 @singer_utils.handle_top_exception(LOGGER)
 def main():
-    args = parse_args(REQUIRED_CONFIG_KEYS)
+    args = parse_args()
     CONFIG.update(args.config)
 
     # Overwrite config specs with commandline args
@@ -163,6 +161,8 @@ def main():
 
     if not CONFIG.get("end_datetime"):
         CONFIG["end_datetime"]  = datetime.datetime.utcnow().isoformat()
+
+    singer_utils.check_config(CONFIG, REQUIRED_CONFIG_KEYS)
 
     # If discover flag was passed, run discovery mode and dump output to stdout
     if args.discover:
