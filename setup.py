@@ -12,7 +12,7 @@ setup(
     description="Singer.io tap for extracting data from BigQuery",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    author="Daigo Tanaka, Anelen Co., LLC. Ivan Zerin, Scentbird",
+    author="Daigo Tanaka, Anelen Co., LLC",
     url="https://github.com/anelendata/tap_bigquery",
 
     classifiers=[
