@@ -1,15 +1,15 @@
 # tap-bigquery
 
-Reverse ETL: Extract data from BigQuery tables.
+Extract data from BigQuery tables.
 
 This is a [Singer](https://singer.io) tap that produces JSON-formatted data
 following the [Singer spec](https://github.com/singer-io/getting-started/blob/master/SPEC.md).
 
 This tap:
 
-- Pulls table data from Google BigQuery
-- Outputs the schema for each resource
-- Incrementally pulls data based on the input state
+- Pulls data from Google BigQuery tables/views with datetime field.
+- Infers the schema for each resource and produce catalog file.
+- Incrementally pulls data based on the input state.
 
 ## Installation
 
@@ -28,43 +28,86 @@ This tap:
  
 ### Step 2: Configure
 
-Create a file called config.json in your working directory, following config.sample.json. The required parameters are the start_datetime and at least one stream (one bigquery table) to copy.
+Create a file called tap_config.json in your working directory, following 
+config.sample.json. The required parameters are at least one stream (one
+bigquery table/view) to copy. start_datetime must also be set in the
+config file or as the command line argument (See the next step).
+
+The table/view is expected to have a column to indicate the creation or
+update date and time so the tap sends the query with `ORDER BY` and use
+the column to record the bookmark (See State section).
 
 ### Step 3: Install and Run
 
-First, make sure Python 3 is installed on your system or follow these installation instructions for Mac or Ubuntu.
+First, make sure Python 3 is installed on your system or follow these 
+installation instructions for Mac or Ubuntu.
 
-tap-bigquery can be run with any Singer Target. As example, let use target-redshift
+tap-bigquery can be run with any Singer Target. As example, let use
+[target-csv](https://github.com/singer-io/target-csv).
 
-These commands will install target-redshift and tap-bigquery with pip. Export google client secrets file to auth in Google cloud. Run tap-bigquery in discovery mode to let it create json schema file and then run them together, piping the output of tap-bigquery to target-redshift:
+These commands will install tap-bigquery and target-csv with pip.
+Export google client secrets file to auth in Google cloud.
+Run tap-bigquery in discovery mode to let it create json schema file and then
+run them together, piping the output of tap-bigquery to target-csv:
 
 ```
-> pip install tap-bigquery pipelinewise-target-redshift
+> pip install tap-bigquery target-csv
 
 > export GOOGLE_APPLICATION_CREDENTIALS="./client_secret.json"
 
-> tap_bigquery -c config.json -d > catalog.json
+> tap_bigquery -c tap_config.json -d > catalog.json
 
-> tap_bigquery -c config.json --catalog catalog.json --start_datetime '2020-05-01T00:00:00Z' --end_datetime '2020-05-01T01:00:00Z'
+> tap_bigquery -c tap_config.json \
+      --catalog tap_catalog.json --start_datetime '2020-05-01T00:00:00Z' \
+      --end_datetime '2020-05-01T01:00:00Z' | target-csv --config target_config.json
 ```
 
-### Authentication
+Notes:
+
+- start and end datetimes accept ISO 8601 format, can be date only. start datetime
+  is inclusive, end datetime is not.
+- It is recommended to inspect the catalog file and fix the auto-type assignment
+  if necessary.
+- target-csv's target_config.json is optinal.
+
+## Authentication
 
 It is recommended to use `tap-bigquery` with a service account.
-* Download the client_secrets.json file for your service account, and place it on the machine where `tap-bigquery` will be executed.
-* Set a `GOOGLE_APPLICATION_CREDENTIALS` environment variable on the machine, where the value is the fully qualified path to client_secrets.json
 
-It should be possible to use the oAuth flow to authenticate to GCP as well:
-* `tap-bigquery` will attempt to open a new window or tab in your default browser. If this fails, copy the URL from the console and manually open it in your browser.
-* If you are not already logged into your Google account, you will be prompted to log in.
-* If you are logged into multiple Google accounts, you will be asked to select one account to use for the authorization.
-* Click the **Accept** button to allow `tap-bigquery` to access your Google BigQuery table.
-* You can close the tab after the signup flow is complete.
+- Download the client_secrets.json file for your service account, and place it
+  on the machine where `tap-bigquery` will be executed.
+- Set a `GOOGLE_APPLICATION_CREDENTIALS` environment variable on the machine,
+  where the value is the fully qualified path to client_secrets.json
 
-The data will be written to the table specified in your `config.json`.
+It should be possible to use the OAuth flow to authenticate to GCP as well:
+- `tap-bigquery` will attempt to open a new window or tab in your default
+  browser. If this fails, copy the URL from the console and manually open it
+  in your browser.
+- If you are not already logged into your Google account, you will be prompted
+  to log in.
+- If you are logged into multiple Google accounts, you will be asked to select
+  one account to use for the authorization.
+- Click the **Accept** button to allow `tap-bigquery` to access your Google BigQuery
+  table.
+- You can close the tab after the signup flow is complete.
 
+## State
+
+This tap emits [state](https://github.com/singer-io/getting-started/blob/master/docs/CONFIG_AND_STATE.md#state-file).
+The command also takes a state file input with `--state <file-name>` option.
+If the state is set, start_datetime config and command line argument are
+ignored and the datetime value from last_update key is used as the resuming
+point.
+
+To avoid the data duplication, start datetime is exclusive
+`start_datetime < datetime_column` when the tap runs with state option. If
+you fear a data loss because of this, just use the `--start_datetime` option
+instead of state. Or set `start_always_inclusive: true` in configuration.
+
+The tap itself does not output a state file. It anticipate the target program
+or a downstream process to fianlize the state safetly and produce a state file.
 
 ## Original repo
 https://github.com/anelendata/tap_bigquery
 
-Copyright &copy; 2019 Anelen Data
+Copyright &copy; 2020- Anelen Data
