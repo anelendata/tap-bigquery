@@ -13,6 +13,12 @@ This tap:
 
 ## Installation
 
+### Step 0: Acknowledge LICENSE and TERMS
+
+Please especially note that the author(s) of tap-bigquery is not responsible
+for the cost, including but not limited to BigQuery cost) incurred by running
+this program.
+
 ### Step 1: Activate the Google BigQuery API
 
  (originally found in the [Google API docs](https://googlecloudplatform.github.io/google-cloud-python/latest/bigquery/usage.html))
@@ -29,9 +35,38 @@ This tap:
 ### Step 2: Configure
 
 Create a file called tap_config.json in your working directory, following 
-config.sample.json. The required parameters are at least one stream (one
-bigquery table/view) to copy. start_datetime must also be set in the
-config file or as the command line argument (See the next step).
+config.sample.json:
+
+```
+{
+  "streams": [
+      {"name": "<some_schema_name>",
+       "table": "`<project>.<dataset>.<table>`",
+       "columns": ["<col_name_0>", "<col_name_1>", "<col_name_2>"],
+       "datetime_key": "<your_key>",
+       "filters": ["country='us'", "state='CA'",
+                   "registered_on>=DATE_ADD(current_date, INTERVAL -7 day)"
+                  ] // also optional: these are parsed in 'WHERE' clause
+      }
+    ],
+  "start_datetime": "2017-01-01T00:00:00Z", // This can be set at the command line argument
+  "end_datetime": "2017-02-01T00:00:00Z", // end_datetime is optional
+  "limit": 100,
+  "start_always_inclusive": false // default is false, optional
+}
+```
+
+- The required parameters is at least one stream (one bigquery table/view) to copy.
+  - It is not a recommended BigQuery practice to use `*` to specify the columns
+    as it may blow up the cost for a table with a large number of columns.
+  - `filters` are optional but we strongly recommend using this over a large
+    partitioned table to control the cost. LIMIT  (The authors of tap-bigquery is not
+    responsible for the cost incurred by running this program. Always test
+    thoroughly with small data set first.)
+- `start_datetime` must also be set in the config file or as the command line
+  argument (See the next step).
+- `limit` will limit the number of results, but it does not result in reduce
+  the query cost.
 
 The table/view is expected to have a column to indicate the creation or
 update date and time so the tap sends the query with `ORDER BY` and use
@@ -69,6 +104,9 @@ Notes:
 - It is recommended to inspect the catalog file and fix the auto-type assignment
   if necessary.
 - target-csv's target_config.json is optinal.
+- tap-bigquery can produce nested records but it's up to target if the data
+  writing will be successful. In this example with target-csv, the table is
+  expected to be flat.
 
 ## Authentication
 
@@ -79,7 +117,15 @@ It is recommended to use `tap-bigquery` with a service account.
 - Set a `GOOGLE_APPLICATION_CREDENTIALS` environment variable on the machine,
   where the value is the fully qualified path to client_secrets.json
 
-It should be possible to use the OAuth flow to authenticate to GCP as well:
+In the testing environment, you can also manually authenticate before runnig
+the tap. In this case you do not need `GOOGLE_APPLICATION_CREDENTIALS` defined:
+
+```
+gcloud auth application-default login
+```
+
+Though not tested, it should also be possible to use the OAuth flow to
+authenticate to GCP as well:
 - `tap-bigquery` will attempt to open a new window or tab in your default
   browser. If this fails, copy the URL from the console and manually open it
   in your browser.
