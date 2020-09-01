@@ -200,8 +200,12 @@ def do_sync(config, state, stream):
                 if prop.format == "date-time":
                     if type(row[key]) == str:
                         r = dateutil.parser.parse(row[key])
-                    elif (type(row[key]) == datetime.datetime or
-                          type(row[key]) == datetime.date):
+                    elif type(row[key]) == datetime.date:
+                        r = datetime.datetime(
+                            year=row[key].year,
+                            month=row[key].month,
+                            day=row[key].day)
+                    elif type(row[key]) == datetime.datetime:
                         r = row[key]
                     else:
                         raise ValueError(
