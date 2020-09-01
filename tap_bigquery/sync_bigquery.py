@@ -131,7 +131,7 @@ def do_discover(config, stream, output_schema_file=None,
     key_properties = []
 
     catalog = {"selected": True,
-               "type": "SCHEMA",
+               "type": "object",
                "stream": stream["name"],
                "key_properties": key_properties,
                "properties": schema["properties"]
@@ -141,6 +141,9 @@ def do_discover(config, stream, output_schema_file=None,
 
 
 def do_sync(config, state, stream):
+    singer.set_currently_syncing(state, stream.tap_stream_id)
+    singer.write_state(state)
+
     client = bigquery.Client()
     metadata = stream.metadata[0]["metadata"]
     tap_stream_id = stream.tap_stream_id
@@ -160,7 +163,7 @@ def do_sync(config, state, stream):
         end_datetime = dateutil.parser.parse(
             config.get("end_datetime")).strftime("%Y-%m-%d %H:%M:%S.%f")
 
-    singer.write_schema(tap_stream_id, stream.schema.to_dict()["properties"],
+    singer.write_schema(tap_stream_id, stream.schema.to_dict(),
                         stream.key_properties)
 
     keys = {"table": metadata["table"],
