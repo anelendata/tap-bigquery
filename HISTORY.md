@@ -1,5 +1,13 @@
 ## History
 
+### 0.3.1
+
+- Fix the issue of schema row not wrapped with object
+- Automatically convert date type to datetime type since date is not
+  supported by schema.
+- Better error handling when --start_datetime is missing.
+- --catalog must be always set for sync (no more auto generate in sync)
+
 ### 0.3.0
 
 - Handle multiple streams
