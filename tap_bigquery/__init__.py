@@ -164,18 +164,21 @@ def main():
 
     singer_utils.check_config(CONFIG, REQUIRED_CONFIG_KEYS)
 
+    if not CONFIG.get("start_datetime"):
+        LOGGER.critical("start_datetime not specified")
+        return
+
     # If discover flag was passed, run discovery mode and dump output to stdout
     if args.discover:
         catalog = discover(CONFIG)
         print(json.dumps(catalog, indent=2))
     # Otherwise run in sync mode
-    else:
-        if args.catalog:
-            catalog = args.catalog
-        else:
-            catalog = Catalog.from_dict(discover(CONFIG))
-
+    elif args.catalog:
+        catalog = args.catalog
         sync(CONFIG, args.state, catalog)
+    else:
+        LOGGER.critical("Catalog file not specified")
+        return
 
 
 CONFIG = {}
