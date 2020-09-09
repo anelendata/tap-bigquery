@@ -164,8 +164,8 @@ def main():
 
     singer_utils.check_config(CONFIG, REQUIRED_CONFIG_KEYS)
 
-    if not CONFIG.get("start_datetime"):
-        LOGGER.critical("start_datetime not specified")
+    if not CONFIG.get("start_datetime") and not CONFIG.get("state"):
+        LOGGER.error("state or start_datetime must be specified")
         return
 
     # If discover flag was passed, run discovery mode and dump output to stdout
