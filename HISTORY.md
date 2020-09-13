@@ -1,5 +1,9 @@
 ## History
 
+### 0.3.2
+
+- Fix the bug of requiring start_datetime even when state arg is present
+
 ### 0.3.1
 
 - Fix the issue of schema row not wrapped with object
