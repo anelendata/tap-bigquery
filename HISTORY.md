@@ -1,5 +1,10 @@
 ## History
 
+### 0.3.3
+
+- Bug fix: Don't overwrite config when arg value is none
+
+
 ### 0.3.2
 
 - Fix the bug of requiring start_datetime even when state arg is present
