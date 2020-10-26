@@ -122,7 +122,7 @@ Run:
 
 ```
 tap-bigquery -c tap_config.json \
-    --catalog tap_catalog.json --start_datetime '2020-08-01T00:00:00Z' \
+    --catalog catalog.json --start_datetime '2020-08-01T00:00:00Z' \
     --end_datetime '2020-08-02T01:00:00Z' | target-csv --config target_config.json \
     > state.json
 ```
