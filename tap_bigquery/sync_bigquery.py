@@ -207,11 +207,14 @@ def do_sync(config, state, stream):
                             day=row[key].day)
                     elif type(row[key]) == datetime.datetime:
                         r = row[key]
+                    elif row[key] is None:
+                        r = row[key]
                     else:
                         raise ValueError(
-                            "Record does not match datetime schema %s" %
-                            row[key])
-                    record[key] = r.isoformat()
+                            "Record does not match datetime or None type",
+                            "Row = {}, key = {}".format(row, key)
+                        )
+                    record[key] = r.isoformat() if r else None
                 elif prop.type[1] == "string":
                     record[key] = str(row[key])
                 elif prop.type[1] == "number" and row[key]:
@@ -222,9 +225,9 @@ def do_sync(config, state, stream):
                     record[key] = row[key]
 
             if LEGACY_TIMESTAMP in properties.keys():
-                record[LEGACY_TIMESTAMP ] = int(round(time.time() * 1000))
+                record[LEGACY_TIMESTAMP] = int(round(time.time() * 1000))
             if EXTRACT_TIMESTAMP in properties.keys():
-                record[EXTRACT_TIMESTAMP ] = extract_tstamp.isoformat()
+                record[EXTRACT_TIMESTAMP] = extract_tstamp.isoformat()
 
             singer.write_record(stream.stream, record)
 
