@@ -217,7 +217,7 @@ def do_sync(config, state, stream):
                             "Row = {}, key = {}".format(row, key)
                         )
                     record[key] = r.isoformat() if r else None
-                elif prop.type[1] == "string" and row[key]:
+                elif prop.type[1] == "string":
                     record[key] = str(row[key])
                 elif prop.type[1] == "number" and row[key]:
                     record[key] = Decimal(row[key])
