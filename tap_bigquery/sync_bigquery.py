@@ -197,7 +197,14 @@ def do_sync(config, state, stream):
                            BATCH_TIMESTAMP]:
                     continue
 
-                if prop.format == "date-time":
+                if row[key] is None:
+                    if prop.type[0] != "null":
+                        raise ValueError(
+                            "NULL value not allowed by the schema"
+                        )
+                    else:
+                        record[key] = None
+                elif prop.format == "date-time":
                     if type(row[key]) == str:
                         r = dateutil.parser.parse(row[key])
                     elif type(row[key]) == datetime.date:
@@ -207,24 +214,13 @@ def do_sync(config, state, stream):
                             day=row[key].day)
                     elif type(row[key]) == datetime.datetime:
                         r = row[key]
-                    elif row[key] is None:
-                        if prop.type[0] != "null":
-                            raise ValueError("NULL value not allowed by the schema")
-                        r = None
-                    else:
-                        raise ValueError(
-                            "Record does not match datetime or None type",
-                            "Row = {}, key = {}".format(row, key)
-                        )
-                    record[key] = r.isoformat() if r else None
+                    record[key] = r.isoformat()
                 elif prop.type[1] == "string":
                     record[key] = str(row[key])
-                elif prop.type[1] == "number" and row[key]:
+                elif prop.type[1] == "number":
                     record[key] = Decimal(row[key])
-                elif prop.type[1] == "integer" and row[key]:
+                elif prop.type[1] == "integer":
                     record[key] = int(row[key])
-                elif row[key] is None and prop.type[0] != "null":
-                    raise ValueError("NULL value not allowed by the schema")
                 else:
                     record[key] = row[key]
 
