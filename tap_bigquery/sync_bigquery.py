@@ -197,7 +197,14 @@ def do_sync(config, state, stream):
                            BATCH_TIMESTAMP]:
                     continue
 
-                if prop.format == "date-time":
+                if row[key] is None:
+                    if prop.type[0] != "null":
+                        raise ValueError(
+                            "NULL value not allowed by the schema"
+                        )
+                    else:
+                        record[key] = None
+                elif prop.format == "date-time":
                     if type(row[key]) == str:
                         r = dateutil.parser.parse(row[key])
                     elif type(row[key]) == datetime.date:
@@ -207,24 +214,20 @@ def do_sync(config, state, stream):
                             day=row[key].day)
                     elif type(row[key]) == datetime.datetime:
                         r = row[key]
-                    else:
-                        raise ValueError(
-                            "Record does not match datetime schema %s" %
-                            row[key])
                     record[key] = r.isoformat()
                 elif prop.type[1] == "string":
                     record[key] = str(row[key])
-                elif prop.type[1] == "number" and row[key]:
+                elif prop.type[1] == "number":
                     record[key] = Decimal(row[key])
-                elif prop.type[1] == "integer" and row[key]:
+                elif prop.type[1] == "integer":
                     record[key] = int(row[key])
                 else:
                     record[key] = row[key]
 
             if LEGACY_TIMESTAMP in properties.keys():
-                record[LEGACY_TIMESTAMP ] = int(round(time.time() * 1000))
+                record[LEGACY_TIMESTAMP] = int(round(time.time() * 1000))
             if EXTRACT_TIMESTAMP in properties.keys():
-                record[EXTRACT_TIMESTAMP ] = extract_tstamp.isoformat()
+                record[EXTRACT_TIMESTAMP] = extract_tstamp.isoformat()
 
             singer.write_record(stream.stream, record)
 
