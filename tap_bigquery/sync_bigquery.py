@@ -208,19 +208,23 @@ def do_sync(config, state, stream):
                     elif type(row[key]) == datetime.datetime:
                         r = row[key]
                     elif row[key] is None:
-                        r = row[key]
+                        if prop.type[0] != "null":
+                            raise ValueError("NULL value not allowed by the schema")
+                        r = None
                     else:
                         raise ValueError(
                             "Record does not match datetime or None type",
                             "Row = {}, key = {}".format(row, key)
                         )
                     record[key] = r.isoformat() if r else None
-                elif prop.type[1] == "string":
+                elif prop.type[1] == "string" and row[key]:
                     record[key] = str(row[key])
                 elif prop.type[1] == "number" and row[key]:
                     record[key] = Decimal(row[key])
                 elif prop.type[1] == "integer" and row[key]:
                     record[key] = int(row[key])
+                elif row[key] is None and prop.type[0] != "null":
+                    raise ValueError("NULL value not allowed by the schema")
                 else:
                     record[key] = row[key]
 
