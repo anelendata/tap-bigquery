@@ -8,7 +8,7 @@ import singer.metrics as metrics
 from google.cloud import bigquery
 
 from . import utils
-from . import json2schema
+import getschema
 
 
 LOGGER = utils.get_logger(__name__)
@@ -98,7 +98,7 @@ def do_discover(config, stream, output_schema_file=None,
     if not data:
         raise Exception("Cannot infer schema: No record returned.")
 
-    schema = json2schema.infer_schema(data)
+    schema = getschema.infer_schema(data)
     if add_timestamp:
         timestamp_format = {"type": ["null", "string"],
                             "format": "date-time"}
