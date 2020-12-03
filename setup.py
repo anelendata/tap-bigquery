@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup
 
-VERSION = "0.3.3"
+VERSION = "0.3.4"
 
 with open("README.md", "r") as fh:
     long_description = fh.read()

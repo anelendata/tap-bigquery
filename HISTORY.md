@@ -1,5 +1,9 @@
 ## History
 
+### 0.3.4
+
+- Bug fix: Do the proper null check (thx @NiallRees)
+
 ### 0.3.3
 
 - Bug fix: Don't overwrite config when arg value is none
