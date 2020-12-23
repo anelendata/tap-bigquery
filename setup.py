@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup
 
-VERSION = "0.3.4"
+VERSION = "0.3.5"
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -30,7 +30,7 @@ setup(
     install_requires=[
         "attrs==19.3.0",
         "backoff==1.8.0",
-        "getschema>=0.1.0",
+        "getschema>=0.1.2",
         "google-cloud-bigquery==1.16.0",
         "requests>=2.20.0",
         "simplejson==3.11.1",
