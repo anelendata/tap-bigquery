@@ -15,6 +15,7 @@ fi
 
 $PYTHON -m venv install_test
 source install_test/bin/activate;
+pip install -U pip
 find $PACKAGE -name '__pycache__' | xargs rm -fr;
 python setup.py clean --all;
 rm -fr dist;

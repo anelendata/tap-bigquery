@@ -1,11 +1,13 @@
 #!/bin/bash
 
-./tests/install_test.sh &&
+# ./tests/install_test.sh &&
 
 python3 setup.py clean --all
 rm -fr dist
 rm -fr build
 rm -fr tap_bigquery.egg-info
+
+pip install -U pip
 python3 setup.py sdist bdist_wheel
 
 # test

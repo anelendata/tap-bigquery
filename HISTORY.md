@@ -1,5 +1,9 @@
 ## History
 
+### 0.3.6
+
+- Bump google-cloud-bigquery version to 3.2.0
+
 ### 0.3.5
 
 - Bump getschema version to 0.1.2 so it allows empty object (dict) entries

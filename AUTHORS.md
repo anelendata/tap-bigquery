@@ -10,4 +10,6 @@ Development Lead
 Contributors
 ------------
 
-* Ivan Zerin
+* sphinks (Ivan Zerin)
+* NiallRees (Niall Woodward)
+* seanglynn-thrive
