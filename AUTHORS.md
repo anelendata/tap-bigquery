@@ -10,6 +10,7 @@ Development Lead
 Contributors
 ------------
 
-* sphinks (Ivan Zerin)
-* NiallRees (Niall Woodward)
-* seanglynn-thrive
+* @sphinks (Ivan Zerin)
+* @NiallRees (Niall Woodward)
+* @seanglynn-thrive
+* @cjohnhanson (Cody J. Hanson)

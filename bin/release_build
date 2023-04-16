@@ -8,7 +8,9 @@ rm -fr build
 rm -fr tap_bigquery.egg-info
 
 pip install -U pip
-python3 setup.py sdist bdist_wheel
+
+python3 -m build 
+# python3 setup.py sdist bdist_wheel
 
 # test
 # python3 -m twine upload --repository testpypi dist/*

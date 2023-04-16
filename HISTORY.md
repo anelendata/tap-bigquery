@@ -1,5 +1,9 @@
 ## History
 
+### 0.3.7
+- Support providing credentials via env var (#26)
+  Thank you (@cjohnhanson)
+
 ### 0.3.6
 
 - Bump google-cloud-bigquery version to 3.2.0
