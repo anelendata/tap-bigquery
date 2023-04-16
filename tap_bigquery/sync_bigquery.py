@@ -2,6 +2,7 @@ import copy, datetime, json, time
 import dateutil.parser
 from decimal import Decimal
 
+from os import environ
 import singer
 import singer.metrics as metrics
 
@@ -9,6 +10,7 @@ from google.cloud import bigquery
 
 from . import utils
 import getschema
+
 
 
 LOGGER = utils.get_logger(__name__)
@@ -25,6 +27,19 @@ LEGACY_TIMESTAMP = "_etl_tstamp"
 
 BOOKMARK_KEY_NAME = "last_update"
 
+SERVICE_ACCOUNT_INFO_ENV_VAR = "GOOGLE_APPLICATION_CREDENTIALS_STRING"
+
+def get_bigquery_client():
+    """Initialize a bigquery client from credentials file JSON,
+    if in environment, else credentials file.
+
+    Returns:
+        Initialized BigQuery client.
+    """
+    credentials_json = environ.get(SERVICE_ACCOUNT_INFO_ENV_VAR)
+    if credentials_json:
+        return bigquery.Client.from_service_account_info(json.loads(credentials_json))
+    return bigquery.Client()
 
 def _build_query(keys, filters=[], inclusive_start=True, limit=None):
     columns = ",".join(keys["columns"])
@@ -63,7 +78,7 @@ def _build_query(keys, filters=[], inclusive_start=True, limit=None):
 
 def do_discover(config, stream, output_schema_file=None,
                 add_timestamp=True):
-    client = bigquery.Client()
+    client = get_bigquery_client()
 
     start_datetime = dateutil.parser.parse(
         config.get("start_datetime")).strftime("%Y-%m-%d %H:%M:%S.%f")
@@ -144,7 +159,7 @@ def do_sync(config, state, stream):
     singer.set_currently_syncing(state, stream.tap_stream_id)
     singer.write_state(state)
 
-    client = bigquery.Client()
+    client = get_bigquery_client()
     metadata = stream.metadata[0]["metadata"]
     tap_stream_id = stream.tap_stream_id
 

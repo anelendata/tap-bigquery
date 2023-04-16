@@ -45,7 +45,7 @@ For other authentication method, please see Authentication section.
 
 ### Step 2: Install
 
-First, make sure Python 3 is installed on your system or follow these 
+First, make sure Python 3 is installed on your system or follow these
 installation instructions for Mac or Ubuntu.
 
 ```
@@ -62,7 +62,7 @@ pip install --no-cache-dir https://github.com/anelendata/tap-bigquery/archive/ma
 
 ### Step 1: Configure
 
-Create a file called tap_config.json in your working directory, following 
+Create a file called tap_config.json in your working directory, following
 config.sample.json:
 
 ```
@@ -149,6 +149,13 @@ It is recommended to use `tap-bigquery` with a service account.
   on the machine where `tap-bigquery` will be executed.
 - Set a `GOOGLE_APPLICATION_CREDENTIALS` environment variable on the machine,
   where the value is the fully qualified path to client_secrets.json
+
+In environments where it is preferable to supply secrets or other configuration via
+environment variables or where it is not feasible to make a `client_secrets.json`
+file available, you may instead provide credential as a JSON string in the
+`GOOGLE_APPLICATION_CREDENTIALS_STRING` environment variable. This JSON string
+should contain the same contents and be formatted the same way as the contents
+of a `client_secrets.json` file.
 
 In the testing environment, you can also manually authenticate before runnig
 the tap. In this case you do not need `GOOGLE_APPLICATION_CREDENTIALS` defined:
