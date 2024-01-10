@@ -1,4 +1,6 @@
 import copy, datetime, json, time
+import os.path
+
 import dateutil.parser
 from decimal import Decimal
 
@@ -76,8 +78,7 @@ def _build_query(keys, filters=[], inclusive_start=True, limit=None):
     return query
 
 
-def do_discover(config, stream, output_schema_file=None,
-                add_timestamp=True):
+def infer_schema(config, stream):
     client = get_bigquery_client()
 
     start_datetime = dateutil.parser.parse(
@@ -113,7 +114,23 @@ def do_discover(config, stream, output_schema_file=None,
     if not data:
         raise Exception("Cannot infer schema: No record returned.")
 
-    schema = getschema.infer_schema(data)
+    return getschema.infer_schema(data)
+
+
+def do_discover(config, stream, output_schema_file=None,
+                add_timestamp=True):
+    schema_file_path = os.path.join(config.get("schema_path"), stream["table"])
+    if not config.get("schemas_path"):
+        LOGGER.info("No schema folder specified, attempting to infer schema")
+        schema = infer_schema(config, stream)
+    elif not os.path.exists(schema_file_path):
+        LOGGER.info(f"No schema file found at {schema_file_path}, attempting to infer schema")
+        schema = infer_schema(config, stream)
+    else:
+        with open(schema_file_path, "r") as fd:
+            schema = json.loads(fd.read())
+        LOGGER.info(f"Using static schema defined at {schema_file_path}")
+
     if add_timestamp:
         timestamp_format = {"type": ["null", "string"],
                             "format": "date-time"}
