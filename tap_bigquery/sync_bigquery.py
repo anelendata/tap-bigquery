@@ -119,7 +119,7 @@ def infer_schema(config, stream):
 
 def do_discover(config, stream, output_schema_file=None,
                 add_timestamp=True):
-    schema_file_path = os.path.join(config.get("schema_path"), stream["table"])
+    schema_file_path = os.path.join(config.get("schema_path", ""), stream["table"])
     if not config.get("schemas_path"):
         LOGGER.info("No schema folder specified, attempting to infer schema")
         schema = infer_schema(config, stream)
