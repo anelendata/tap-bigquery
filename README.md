@@ -80,7 +80,8 @@ config.sample.json:
   "start_datetime": "2017-01-01T00:00:00Z", // This can be set at the command line argument
   "end_datetime": "2017-02-01T00:00:00Z", // end_datetime is optional
   "limit": 100,
-  "start_always_inclusive": false // default is false, optional
+  "start_always_inclusive": false, // default is false, optional
+  "schema_path": "/absolute/path/to/schemas/directory" // default None, will attempt to infer schema
 }
 ```
 
