@@ -36,6 +36,7 @@ setup(
         "simplejson==3.11.1",
         "singer-python>=5.2.0",
         "setuptools>=40.3.0",
+        "numpy<2"
     ],
 
     entry_points="""
