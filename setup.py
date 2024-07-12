@@ -33,7 +33,7 @@ setup(
         "getschema>=0.1.2",
         "google-cloud-bigquery>=3.25.0",
         "requests>=2.20.0",
-        "simplejson>=3.17.0",
+        "simplejson>=3.11.0",
         "singer-python>=5.2.0",
         "setuptools>=40.3.0",
         "numpy<2"
