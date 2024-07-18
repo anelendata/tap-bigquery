@@ -1,5 +1,16 @@
 ## History
 
+### 0.3.9
+
+- update  "google-cloud-bigquery>=3.25.0"
+- update dependencies
+- "simplejson>=3.11.0"
+  Thank you (@gregkoutsimp)
+
+### 0.3.8
+- Constrain numpy version to (< 2) for Meltano compatibility
+  Thank you (@AlejandroUPC)
+
 ### 0.3.7
 - Support providing credentials via env var (#26)
   Thank you (@cjohnhanson)

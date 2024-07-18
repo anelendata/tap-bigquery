@@ -14,3 +14,5 @@ Contributors
 * @NiallRees (Niall Woodward)
 * @seanglynn-thrive
 * @cjohnhanson (Cody J. Hanson)
+* @AlejandroUPC (Alejandro Martínez Otal)
+* @gregkoutsimp (Greg Koutsimpogiorgos)
