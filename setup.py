@@ -28,17 +28,16 @@ setup(
     ],
 
     install_requires=[
-        "attrs==19.3.0",
+        "attrs>=21.3.0",
         "backoff==1.8.0",
         "getschema>=0.1.2",
-        "google-cloud-bigquery==3.2.0",
+        "google-cloud-bigquery>=3.25.0",
         "requests>=2.20.0",
-        "simplejson==3.11.1",
+        "simplejson>=3.11.0",
         "singer-python>=5.2.0",
         "setuptools>=40.3.0",
         "numpy<2"
     ],
-
     entry_points="""
     [console_scripts]
     tap-bigquery=tap_bigquery:main
