@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tap-bigquery"
+version = "0.3.10"
+description = "Singer.io tap for extracting data from BigQuery"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "Apache-2.0"
+
+authors = [
+  { name = "Daigo Tanaka" }
+]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12"
+]
+
+dependencies = [
+    "attrs==25.3.0",
+    "backoff>=1.8.0",
+    "getschema>=0.2.11",
+    "google-api-python-client>=2.133.0",
+    "google-cloud-bigquery==3.37.0",
+    "requests==2.32.5",
+    "simplejson==3.13.2",
+    "singer-python==6.1.1",
+    "numpy<2",
+]
+
+[project.urls]
+Homepage = "https://github.com/anelendata/tap-bigquery"
+
+[project.scripts]
+tap-bigquery = "tap_bigquery:main.main"
+
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tap_bigquery*"]
+
+[tool.setuptools]
+include-package-data = true
+
+[dependency-groups]
+dev = [
+    "build>=1.3.0",
+    "pytest",
+]

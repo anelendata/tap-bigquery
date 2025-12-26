@@ -1,5 +1,9 @@
 ## History
 
+### 0.3.10
+
+- Modernize the project to pyproject.toml
+
 ### 0.3.9
 
 - update  "google-cloud-bigquery>=3.25.0"
